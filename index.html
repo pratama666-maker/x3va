@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>X3VA Terminal Microblogging</title>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="https://ibb.co.com/v45cBK4b">
+  <link rel="icon" type="image/png" href="https://i.ibb.co.com/jkK851kd/file-000000004d6861fa9932f866b787f578.png">
 
   <!-- SEO Meta -->
   <meta name="description" content="X3VA Terminal Microblogging — jejaring sosial bergaya terminal di mana kamu berinteraksi dengan kode. Post, komentar, dan pesan semuanya dikendalikan lewat perintah layaknya terminal.">
@@ -16,7 +16,7 @@
   <meta property="og:title" content="X3VA Terminal Microblogging">
   <meta property="og:description" content="Jelajahi media sosial bergaya terminal! Tulis perintah, buat postingan, kirim pesan, dan temukan pengguna lain layaknya di terminal.">
   <meta property="og:image" content="https://i.ibb.co.com/jkK851kd/file-000000004d6861fa9932f866b787f578.png">
-  <meta property="og:url" content="https://x3va.varcel.app">
+  <meta property="og:url" content="https://x3va.vercel.app">
   <meta property="og:type" content="website">
 
   <!-- Twitter Card -->
@@ -115,7 +115,7 @@
   /* === TERMINAL AREA === */
   .terminal {
     flex: 1;
-    padding: 1rem 1rem 0.5rem; /* Mengurangi padding bawah */
+    padding: 1rem 1rem 5rem; /* Tambah padding bawah yang cukup untuk command input */
     overflow-y: auto;
     line-height: 1.6;
     font-size: 0.95rem;
@@ -129,21 +129,41 @@
     flex-direction: column;
   }
 
-  .line {
+  /* === COMMAND INPUT CAPSULE === */
+  .command-input-container {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    z-index: 50;
+    background: rgba(20, 20, 20, 0.85);
+    border-radius: 50px;
+    padding: 0.8rem 1.2rem;
     display: flex;
     align-items: center;
-    padding: 0.4rem 1rem; /* Mengurangi padding */
-    border-top: 1px solid #111;
-    background: rgba(0,0,0,0.95);
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 255, 204, 0.15);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .command-input-container:hover {
+    box-shadow: 0 8px 32px rgba(0, 255, 204, 0.25);
+    border: 1px solid rgba(0, 255, 204, 0.3);
+  }
+
+  .command-input-container:focus-within {
+    box-shadow: 0 8px 32px rgba(0, 255, 204, 0.35);
+    border: 1px solid rgba(0, 255, 204, 0.4);
   }
 
   .prompt {
     color: var(--accent);
-    margin-right: 0.5rem;
+    margin-right: 0.8rem;
     font-weight: bold;
+    font-size: 1.2rem;
   }
 
   .input {
@@ -604,8 +624,12 @@
 
   @media (max-width: 768px) {
     .search-container { width: 90%; }
-    .terminal { font-size: 0.9rem; padding: 0.8rem 0.8rem 0.4rem; }
-    .line { padding: 0.4rem 0.8rem; }
+    .terminal { font-size: 0.9rem; padding: 0.8rem 0.8rem 6rem; } /* Tambah padding bawah untuk mobile */
+    .command-input-container {
+      width: 95%;
+      bottom: 1rem;
+      padding: 0.6rem 1rem;
+    }
     .music-controls { justify-content: center; }
   }
 </style>
@@ -634,8 +658,8 @@
     </div>
   </div>
 
-  <!-- Command Line Input -->
-  <div class="line">
+  <!-- Command Line Input - Capsule Style -->
+  <div class="command-input-container">
     <span class="prompt">>_</span>
     <div class="input-autocomplete">
       <input type="text" class="input" id="input" autofocus placeholder="Type command...">
