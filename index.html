@@ -1,0 +1,2864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X3VA Terminal Microblogging</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://ibb.co.com/v45cBK4b">
+
+  <!-- SEO Meta -->
+  <meta name="description" content="X3VA Terminal Microblogging — jejaring sosial bergaya terminal di mana kamu berinteraksi dengan kode. Post, komentar, dan pesan semuanya dikendalikan lewat perintah layaknya terminal.">
+  <meta name="keywords" content="X3VA, terminal social media, coding microblog, macOS style, tech community, developer social app">
+
+  <!-- Open Graph / Social Media Thumbnail -->
+  <meta property="og:title" content="X3VA Terminal Microblogging">
+  <meta property="og:description" content="Jelajahi media sosial bergaya terminal! Tulis perintah, buat postingan, kirim pesan, dan temukan pengguna lain layaknya di terminal.">
+  <meta property="og:image" content="https://i.ibb.co.com/jkK851kd/file-000000004d6861fa9932f866b787f578.png">
+  <meta property="og:url" content="https://x3va.varcel.app">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="X3VA Terminal Microblogging">
+  <meta name="twitter:description" content="Media sosial berbasis terminal yang dikendalikan lewat kode.">
+  <meta name="twitter:image" content="https://i.ibb.co.com/jkK851kd/file-000000004d6861fa9932f866b787f578.png">
+
+  <!-- Site Verification (opsional, untuk Google Search Console) -->
+  <!-- <meta name="google-site-verification" content="KODE_VERIFIKASI_GOOGLE"> -->
+<style>
+  :root {
+    --bg: #000;
+    --text: #e6e6e6;
+    --accent: #00ffcc;
+    --gray: #888;
+    --font: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* === SEARCH BAR CAPSULE === */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 20, 20, 0.9);
+    padding: 0.8rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .search-container {
+    position: relative;
+    width: 60%;
+    max-width: 600px;
+  }
+
+  .search-input {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    outline: none;
+    border-radius: 9999px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+    font-family: var(--font);
+    transition: 0.3s ease;
+  }
+
+  .search-input:focus {
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #222;
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+  }
+
+  .autocomplete-suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+  }
+
+  .autocomplete-suggestion:hover {
+    background: #333;
+  }
+
+  /* === TERMINAL AREA === */
+  .terminal {
+    flex: 1;
+    padding: 1rem 1rem 0.5rem; /* Mengurangi padding bawah */
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: column-reverse; /* Ini yang penting untuk membalik urutan */
+  }
+
+  .terminal-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .line {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 1rem; /* Mengurangi padding */
+    border-top: 1px solid #111;
+    background: rgba(0,0,0,0.95);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+
+  .prompt {
+    color: var(--accent);
+    margin-right: 0.5rem;
+    font-weight: bold;
+  }
+
+  .input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  .log {
+    margin-bottom: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .username {
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .timestamp {
+    color: var(--gray);
+    font-size: 0.8rem;
+  }
+
+  .system {
+    color: var(--gray);
+    font-style: italic;
+  }
+
+  .hashtag {
+    color: #ffcc00;
+  }
+
+  .mention {
+    color: #00aaff;
+  }
+
+  .media-preview {
+    margin-top: 5px;
+    max-width: 300px;
+    border-radius: 4px;
+  }
+
+  .media-container {
+    margin-top: 10px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .music-player {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #333;
+  }
+
+  .music-controls {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .music-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+
+  .music-btn:hover {
+    background: #00ccaa;
+  }
+
+  .search-results {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #333;
+  }
+
+  .search-result-item {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #333;
+  }
+
+  .search-result-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .status-success {
+    color: #4caf50;
+    font-weight: bold;
+  }
+
+  .status-error {
+    color: #f44336;
+    font-weight: bold;
+  }
+
+  .clickable-link {
+    color: #64b5f6;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .clickable-link:hover {
+    color: #90caf9;
+  }
+
+  /* Horizontal Autocomplete */
+  .input-autocomplete {
+    position: relative;
+    flex: 1;
+  }
+
+  .input-autocomplete-suggestions {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: #222;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    padding: 8px;
+    z-index: 1000;
+    display: none;
+    border: 1px solid #333;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: #555 #222;
+  }
+
+  .input-autocomplete-suggestions::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .input-autocomplete-suggestions::-webkit-scrollbar-track {
+    background: #222;
+  }
+
+  .input-autocomplete-suggestions::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 3px;
+  }
+
+  .input-autocomplete-suggestion {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-right: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: #333;
+    transition: background 0.2s;
+  }
+
+  .input-autocomplete-suggestion:hover {
+    background: #444;
+  }
+
+  .input-autocomplete-suggestion:last-child {
+    margin-right: 0;
+  }
+
+  /* Loading Animation */
+  .loading {
+    display: inline-block;
+    position: relative;
+  }
+
+  .loading::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    left: 0;
+    top: 0;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% {
+      width: 0;
+      opacity: 0.3;
+    }
+    50% {
+      width: 100%;
+      opacity: 0.7;
+    }
+    100% {
+      width: 100%;
+      opacity: 0;
+      left: 100%;
+    }
+  }
+
+  .typing-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    animation: typing 1.4s infinite ease-in-out;
+    margin-right: 2px;
+  }
+
+  .typing-indicator:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-indicator:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      transform: translateY(0);
+      opacity: 0.3;
+    }
+    30% {
+      transform: translateY(-10px);
+      opacity: 1;
+    }
+  }
+
+  .typing-container {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Profile Edit Styles */
+  .profile-edit-container {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #333;
+  }
+
+  .profile-edit-field {
+    margin-bottom: 10px;
+  }
+
+  .profile-edit-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--accent);
+  }
+
+  .profile-edit-input {
+    width: 100%;
+    background: #222;
+    color: var(--text);
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: var(--font);
+  }
+
+  .profile-edit-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .profile-edit-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .profile-edit-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+
+  .profile-edit-btn:hover {
+    background: #00ccaa;
+  }
+
+  .profile-edit-btn.cancel {
+    background: #555;
+    color: var(--text);
+  }
+
+  .profile-edit-btn.cancel:hover {
+    background: #666;
+  }
+
+  /* Map Preview */
+  .map-container {
+    margin-top: 10px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 200px;
+    width: 100%;
+  }
+
+  .map-preview {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* Media Preview for Posting */
+  .media-upload-preview {
+    margin-top: 10px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 10px;
+    background: rgba(30, 30, 30, 0.7);
+  }
+
+  .media-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .media-preview-title {
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .media-preview-remove {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  .media-preview-remove:hover {
+    background: #d32f2f;
+  }
+
+  /* Auto refresh indicator - disembunyikan */
+  .auto-refresh-indicator {
+    display: none !important;
+  }
+
+  /* Search result styles */
+  .search-section {
+    margin-bottom: 15px;
+  }
+
+  .search-section-title {
+    color: var(--accent);
+    font-weight: bold;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 4px;
+  }
+
+  .account-result {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .account-result:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .account-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  .account-info {
+    flex: 1;
+  }
+
+  .account-username {
+    font-weight: bold;
+    color: var(--accent);
+  }
+
+  .account-bio {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-top: 2px;
+  }
+
+  .post-result {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .post-result:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .post-username {
+    font-weight: bold;
+    color: var(--accent);
+  }
+
+  .post-timestamp {
+    font-size: 0.8rem;
+    color: var(--gray);
+  }
+
+  .post-content {
+    margin-bottom: 6px;
+  }
+
+  .post-stats {
+    font-size: 0.8rem;
+    color: var(--gray);
+  }
+
+  @media (max-width: 768px) {
+    .search-container { width: 90%; }
+    .terminal { font-size: 0.9rem; padding: 0.8rem 0.8rem 0.4rem; }
+    .line { padding: 0.4rem 0.8rem; }
+    .music-controls { justify-content: center; }
+  }
+</style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Search Bar Capsule -->
+  <div class="search-bar">
+    <div class="search-container">
+      <input type="text" id="search" class="search-input" placeholder="Search X3VA...">
+      <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
+    </div>
+  </div>
+
+  <!-- Terminal Section -->
+  <div class="terminal" id="terminal">
+    <div class="terminal-content" id="terminal-content">
+      <div class="system">Initializing X3VA system...</div>
+      <div class="system">Connecting to Firebase...</div>
+      <div class="system">Authenticating user...</div>
+    </div>
+  </div>
+
+  <!-- Command Line Input -->
+  <div class="line">
+    <span class="prompt">>_</span>
+    <div class="input-autocomplete">
+      <input type="text" class="input" id="input" autofocus placeholder="Type command...">
+      <div id="input-autocomplete-suggestions" class="input-autocomplete-suggestions"></div>
+    </div>
+  </div>
+
+  <!-- Auto Refresh Indicator - disembunyikan -->
+  <div class="auto-refresh-indicator" id="auto-refresh-indicator" style="display: none;">
+    Auto-refresh: <span id="refresh-countdown">6:00:00</span>
+  </div>
+
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, deleteDoc, limit, startAfter, endAt } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAeotajhNxY8fbnlduQYgw2Onm5lhzQ6sg",
+      authDomain: "whatfun-800ed.firebaseapp.com",
+      projectId: "whatfun-800ed",
+      storageBucket: "whatfun-800ed.firebasestorage.app",
+      messagingSenderId: "741248738326",
+      appId: "1:741248738326:web:10e6aa3b15f30306038137",
+      measurementId: "G-85QV6JFQ1W"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM elements
+    const term = document.getElementById('terminal');
+    const termContent = document.getElementById('terminal-content');
+    const input = document.getElementById('input');
+    const search = document.getElementById('search');
+    const autocompleteSuggestions = document.getElementById('autocomplete-suggestions');
+    const inputAutocompleteSuggestions = document.getElementById('input-autocomplete-suggestions');
+    const autoRefreshIndicator = document.getElementById('auto-refresh-indicator');
+    const refreshCountdown = document.getElementById('refresh-countdown');
+    
+    // Application state
+    const state = {
+      posts: [],
+      user: null,
+      userId: null,
+      chatUser: null,
+      notifications: [],
+      following: [],
+      blocked: [],
+      userProfile: {
+        username: '',
+        bio: '',
+        avatar: '',
+        location: ''
+      },
+      music: {
+        isPlaying: false,
+        currentTrack: null,
+        currentRadio: null,
+        trackIndex: 0,
+        radioIndex: 0,
+        tracks: [
+          { title: "Synthwave Dreams", artist: "Neon Nights", url: "https://example.com/track1.mp3" },
+          { title: "Terminal Breeze", artist: "Code Echo", url: "https://example.com/track2.mp3" },
+          { title: "Digital Sunset", artist: "Pixel Waves", url: "https://example.com/track3.mp3" },
+          { title: "Binary Love", artist: "Data Stream", url: "https://example.com/track4.mp3" },
+          { title: "Glitch in the System", artist: "Error 404", url: "https://example.com/track5.mp3" }
+        ],
+        radios: [
+          { name: "Chillhop Radio", url: "https://chillhop.com/stream", genre: "Lo-fi Hip Hop" },
+          { name: "Radio Garden", url: "https://radio.garden", genre: "World Radio" },
+          { name: "SomaFM", url: "https://somafm.com", genre: "Various" },
+          { name: "Radio Paradise", url: "https://radioparadise.com", genre: "Eclectic" },
+          { name: "DI.FM", url: "https://www.di.fm", genre: "Electronic" },
+          { name: "181.fm", url: "https://www.181.fm", genre: "Various" },
+          { name: "AccuRadio", url: "https://www.accuradio.com", genre: "Various" },
+          { name: "Sky.fm", url: "https://www.sky.fm", genre: "Various" },
+          { name: "Jazz24", url: "https://www.jazz24.org", genre: "Jazz" },
+          { name: "Classical KDFC", url: "https://www.kdfc.com", genre: "Classical" }
+        ]
+      },
+      users: [
+        { username: "alice", bio: "Frontend developer", posts: 24 },
+        { username: "bob", bio: "Backend engineer", posts: 18 },
+        { username: "charlie", bio: "UI/UX designer", posts: 32 },
+        { username: "david", bio: "Full stack developer", posts: 15 },
+        { username: "emma", bio: "Data scientist", posts: 27 },
+        { username: "frank", bio: "DevOps engineer", posts: 21 },
+        { username: "grace", bio: "Product manager", posts: 9 },
+        { username: "henry", bio: "Security researcher", posts: 33 }
+      ],
+      isFirstTime: true,
+      pendingPost: {
+        text: '',
+        mediaUrl: '',
+        mediaType: ''
+      },
+      // Tambahkan state untuk melacak konteks saat ini
+      currentContext: 'home', // 'home', 'chat', 'profile', 'search', 'music', 'radio', 'notifications'
+      previousContext: null,
+      // Tambahkan state untuk melihat profil pengguna lain
+      viewingProfile: null,
+      // State untuk pagination postingan
+      postsPagination: {
+        lastVisible: null,
+        hasMore: true,
+        loading: false,
+        threeMonthsAgo: null
+      },
+      // State untuk auto refresh
+      autoRefresh: {
+        enabled: true,
+        interval: null,
+        countdownInterval: null,
+        nextRefreshTime: null,
+        refreshDuration: 6 * 60 * 60 * 1000, // 6 jam dalam milidetik
+        currentBatchIndex: 0,
+        totalBatches: 0
+      }
+    };
+
+    // Sample data for autocomplete
+    const sampleData = {
+      users: ["alice", "bob", "charlie", "david", "emma", "frank", "grace", "henry"],
+      hashtags: ["javascript", "webdev", "coding", "terminal", "opensource", "design", "css", "html", "react", "vue", "angular", "nodejs", "python", "java", "php", "ruby", "go", "rust", "docker", "kubernetes", "devops", "frontend", "backend", "fullstack", "database", "api", "rest", "graphql", "microservices", "serverless"],
+      commands: ["post", "comment", "like", "share", "run profile", "chat", "notif", "clear", "exit", "follow", "unfollow", "open profile", "open voice", "block", "report post", "run music", "list music", "run radio", "list radio", "reply", "back", "edit profile", "delete", "lokasi", "new posts", "load more"]
+    };
+
+    // Flag to control auto scroll behavior
+    let shouldAutoScroll = true;
+    let isTyping = false;
+    let isEditingProfile = false;
+
+    // Fungsi untuk menyimpan UID ke localStorage
+    function saveUserIdToLocalStorage(uid) {
+      localStorage.setItem('x3va_user_uid', uid);
+    }
+
+    // Fungsi untuk mendapatkan UID dari localStorage
+    function getUserIdFromLocalStorage() {
+      return localStorage.getItem('x3va_user_uid');
+    }
+
+    // Fungsi untuk menghapus UID dari localStorage
+    function removeUserIdFromLocalStorage() {
+      localStorage.removeItem('x3va_user_uid');
+    }
+
+    // Fungsi untuk membuat custom token dari UID
+    async function createCustomTokenFromUid(uid) {
+      // Di aplikasi nyata, ini harus dilakukan di backend server
+      // Untuk demo, kita akan menggunakan UID langsung
+      return uid;
+    }
+
+    // Initialize Firebase authentication dengan localStorage
+    async function initializeAuth() {
+      // Cek apakah ada UID yang tersimpan di localStorage
+      const savedUid = getUserIdFromLocalStorage();
+      
+      if (savedUid) {
+        try {
+          // Coba login dengan UID yang tersimpan
+          const customToken = await createCustomTokenFromUid(savedUid);
+          
+          // Untuk demo, kita akan menggunakan signInAnonymously lagi
+          // tapi dengan mengecek apakah UID yang dihasilkan sama dengan yang tersimpan
+          const userCredential = await signInAnonymously(auth);
+          const user = userCredential.user;
+          
+          // Jika UID berbeda, update UID di localStorage
+          if (user.uid !== savedUid) {
+            saveUserIdToLocalStorage(user.uid);
+          }
+          
+          // Lanjutkan dengan inisialisasi
+          continueWithUser(user);
+        } catch (error) {
+          console.error("Error using saved UID:", error);
+          // Jika gagal, lakukan login anonim baru
+          await newAnonymousAuth();
+        }
+      } else {
+        // Jika tidak ada UID tersimpan, lakukan login anonim baru
+        await newAnonymousAuth();
+      }
+    }
+
+    // Fungsi untuk login anonim baru
+    async function newAnonymousAuth() {
+      try {
+        const userCredential = await signInAnonymously(auth);
+        const user = userCredential.user;
+        
+        // Simpan UID ke localStorage
+        saveUserIdToLocalStorage(user.uid);
+        
+        // Lanjutkan dengan inisialisasi
+        continueWithUser(user);
+      } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        log(`<span class="status-error">error</span>: Authentication failed: ${errorMessage}`);
+      }
+    }
+
+    // Fungsi untuk melanjutkan inisialisasi setelah login berhasil
+    function continueWithUser(user) {
+      state.userId = user.uid;
+      state.user = `user_${user.uid.substring(0, 8)}`;
+      state.userProfile.username = state.user;
+      
+      log(`<span class="status-success">success</span>: Authenticated as ${state.user}`);
+      log('Welcome to X3VA microblogging terminal. Type <b>help</b> to begin.');
+      
+      // Load user data from Firestore
+      loadUserData();
+      
+      // Setup real-time listeners
+      setupRealtimeListeners();
+      
+      // Show posts on first login
+      if (state.isFirstTime) {
+        setTimeout(() => {
+          showPosts();
+          state.isFirstTime = false;
+        }, 1500);
+      }
+    }
+
+    // Load user data from Firestore
+    async function loadUserData() {
+      try {
+        const userDoc = await getDocs(query(collection(db, "users"), where("userId", "==", state.userId)));
+        
+        if (userDoc.empty) {
+          // Create new user document
+          await addDoc(collection(db, "users"), {
+            userId: state.userId,
+            username: state.user,
+            bio: '',
+            avatar: '',
+            location: '',
+            following: [],
+            blocked: [],
+            createdAt: new Date()
+          });
+        } else {
+          // Load existing user data
+          const userData = userDoc.docs[0].data();
+          state.following = userData.following || [];
+          state.blocked = userData.blocked || [];
+          state.userProfile.bio = userData.bio || '';
+          state.userProfile.avatar = userData.avatar || '';
+          state.userProfile.location = userData.location || '';
+          
+          // Update username if it's different in the database
+          if (userData.username && userData.username !== state.user) {
+            state.user = userData.username;
+            state.userProfile.username = userData.username;
+          }
+        }
+        
+        // Load posts
+        loadPosts();
+      } catch (error) {
+        log(`<span class="status-error">error</span>: Failed to load user data: ${error.message}`);
+      }
+    }
+
+    // Load posts from Firestore dengan pagination
+    async function loadPosts(reset = false) {
+      if (state.postsPagination.loading) return;
+      
+      try {
+        state.postsPagination.loading = true;
+        
+        // Reset pagination jika diperlukan
+        if (reset) {
+          state.postsPagination.lastVisible = null;
+          state.postsPagination.hasMore = true;
+          state.posts = [];
+        }
+        
+        // Hitung tanggal 3 bulan yang lalu
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        state.postsPagination.threeMonthsAgo = threeMonthsAgo;
+        
+        // Buat query untuk mendapatkan postingan
+        let postsQuery;
+        
+        if (state.postsPagination.lastVisible) {
+          // Jika ada lastVisible, gunakan startAfter untuk pagination
+          postsQuery = query(
+            collection(db, "posts"),
+            where("createdAt", ">=", threeMonthsAgo),
+            orderBy("createdAt", "asc"),
+            startAfter(state.postsPagination.lastVisible),
+            limit(30)
+          );
+        } else {
+          // Jika tidak ada lastVisible, mulai dari awal
+          postsQuery = query(
+            collection(db, "posts"),
+            where("createdAt", ">=", threeMonthsAgo),
+            orderBy("createdAt", "asc"),
+            limit(30)
+          );
+        }
+        
+        const querySnapshot = await getDocs(postsQuery);
+        
+        // Tambahkan postingan baru ke state
+        const newPosts = [];
+        querySnapshot.forEach((doc) => {
+          newPosts.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        
+        // Update state posts
+        if (reset) {
+          state.posts = newPosts;
+        } else {
+          state.posts = [...state.posts, ...newPosts];
+        }
+        
+        // Update lastVisible untuk pagination berikutnya
+        if (querySnapshot.docs.length > 0) {
+          state.postsPagination.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Cek apakah masih ada postingan lagi
+        state.postsPagination.hasMore = querySnapshot.docs.length === 30;
+        
+        // Hitung total batch untuk auto refresh
+        if (reset) {
+          // Hitung perkiraan total batch berdasarkan jumlah postingan dalam 3 bulan
+          const totalPostsQuery = query(
+            collection(db, "posts"),
+            where("createdAt", ">=", threeMonthsAgo)
+          );
+          const totalPostsSnapshot = await getDocs(totalPostsQuery);
+          const totalPosts = totalPostsSnapshot.size;
+          state.autoRefresh.totalBatches = Math.ceil(totalPosts / 30);
+          
+          // Mulai auto refresh
+          startAutoRefresh();
+        }
+        
+        log(`<span class="status-success">success</span>: Loaded ${newPosts.length} posts`);
+        state.postsPagination.loading = false;
+      } catch (error) {
+        log(`<span class="status-error">error</span>: Failed to load posts: ${error.message}`);
+        state.postsPagination.loading = false;
+      }
+    }
+
+    // Setup real-time listeners
+    function setupRealtimeListeners() {
+      // Listen for user data changes
+      const userQuery = query(collection(db, "users"), where("userId", "==", state.userId));
+      onSnapshot(userQuery, (querySnapshot) => {
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          state.following = userData.following || [];
+          state.blocked = userData.blocked || [];
+          state.userProfile.bio = userData.bio || '';
+          state.userProfile.avatar = userData.avatar || '';
+          state.userProfile.location = userData.location || '';
+          
+          // Update username if it's different in the database
+          if (userData.username && userData.username !== state.user) {
+            state.user = userData.username;
+            state.userProfile.username = userData.username;
+          }
+        }
+      });
+    }
+
+    // Fungsi untuk memulai auto refresh
+    function startAutoRefresh() {
+      if (!state.autoRefresh.enabled) return;
+      
+      // Set waktu refresh berikutnya
+      state.autoRefresh.nextRefreshTime = new Date(Date.now() + state.autoRefresh.refreshDuration);
+      
+      // Set interval untuk auto refresh
+      state.autoRefresh.interval = setInterval(() => {
+        if (state.postsPagination.hasMore) {
+          // Load more posts
+          loadMorePosts();
+          
+          // Update batch index
+          state.autoRefresh.currentBatchIndex = (state.autoRefresh.currentBatchIndex + 1) % state.autoRefresh.totalBatches;
+          
+          // Jika sudah kembali ke batch pertama, reset
+          if (state.autoRefresh.currentBatchIndex === 0) {
+            log('<span class="system">Auto-refresh: Starting from the beginning...</span>');
+            loadPosts(true);
+          }
+        } else {
+          // Jika tidak ada postingan lagi, reset ke batch pertama
+          log('<span class="system">Auto-refresh: Reached the end, starting from the beginning...</span>');
+          loadPosts(true);
+          state.autoRefresh.currentBatchIndex = 0;
+        }
+        
+        // Update waktu refresh berikutnya
+        state.autoRefresh.nextRefreshTime = new Date(Date.now() + state.autoRefresh.refreshDuration);
+      }, state.autoRefresh.refreshDuration);
+    }
+
+    function log(msg, cls = "system") {
+      const div = document.createElement('div');
+      div.className = `log ${cls}`;
+      
+      // Process hashtags, mentions, and links
+      msg = msg.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+      msg = msg.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+      
+      // Make URLs clickable
+      msg = msg.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="clickable-link">$1</a>');
+      
+      div.innerHTML = msg;
+      termContent.appendChild(div);
+      
+      // Only auto scroll if we're not currently typing
+      if (!isTyping && shouldAutoScroll) {
+        term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      }
+    }
+
+    function showHelp() {
+      log(`Available commands:
+  post "text"                           — Create a new post
+  post "text" + "url image"             — Post with image
+  post "text" + "url video"             — Post with video
+  comment @username "text"              — Comment on a user's post
+  like @username                       — Like a user's post
+  share @username                      — Share a user's post
+  run profile                          — Show your profile
+  open profile @username               — View another user's profile
+  chat @username                       — Start chat mode
+  reply "text"                         — Reply in chat (only in chat mode)
+  back                                 — Return to previous context
+  open voice                           — Voice note (only in chat mode)
+  lokasi                               — Share location (only in chat mode)
+  follow @username                     — Follow a user
+  unfollow @username                   — Unfollow a user
+  block @username                      — Block a user
+  report post @username                — Report a user's post
+  run music                            — Start music player
+  list music                           — Show available music
+  run radio                            — Start radio player
+  list radio                           — Show available radio stations
+  notif                                — Show notifications
+  clear                                — Clear the screen
+  edit profile                         — Edit your profile (after run profile)
+  delete "judul post"                  — Delete your own post
+  new posts                            — Refresh and show newest posts
+  load more                            — Load more posts
+  toggle autorefresh                   — Toggle auto-refresh on/off`);
+    }
+
+    function renderPost(post, id) {
+      let mediaHtml = '';
+      if (post.image) {
+        mediaHtml = `<div class="media-container">
+          <img src="${post.image}" class="media-preview" alt="Post image">
+        </div>`;
+      } else if (post.video) {
+        mediaHtml = `<div class="media-container">
+          <video controls class="media-preview"><source src="${post.video}" type="video/mp4"></video>
+        </div>`;
+      }
+      
+      const timestamp = new Date(post.createdAt.toDate()).toLocaleString();
+      log(`#${id}  @${post.user}: ${post.text} <span class="timestamp">[${timestamp}]</span> ${mediaHtml}`);
+    }
+
+    // Show posts with algorithm - diubah untuk menampilkan postingan lama di atas
+    function showPosts() {
+      if (state.posts.length === 0) {
+        log('No posts yet.');
+        return;
+      }
+      
+      log('<span class="system">=== FEED POSTS ===</span>');
+      
+      // Algorithm: Show posts from followed users first, then others
+      const followedPosts = [];
+      const otherPosts = [];
+      
+      state.posts.forEach(post => {
+        if (state.following.includes(post.user) || post.userId === state.userId) {
+          followedPosts.push(post);
+        } else {
+          otherPosts.push(post);
+        }
+      });
+      
+      // Sort by date (oldest first untuk terminal style)
+      followedPosts.sort((a, b) => a.createdAt - b.createdAt);
+      otherPosts.sort((a, b) => a.createdAt - b.createdAt);
+      
+      // Display followed posts first
+      if (followedPosts.length > 0) {
+        log('<span class="system">--- Posts from people you follow ---</span>');
+        followedPosts.forEach((post, i) => renderPost(post, i + 1));
+      }
+      
+      // Display other posts
+      if (otherPosts.length > 0) {
+        log('<span class="system">--- Other posts ---</span>');
+        otherPosts.forEach((post, i) => renderPost(post, i + followedPosts.length + 1));
+      }
+      
+      // Tampilkan indikator jika ada lebih banyak postingan
+      if (state.postsPagination.hasMore) {
+        log('<span class="system">Type "load more" to see more posts.</span>');
+      } else {
+        log('<span class="system">You have reached the end of posts from the last 3 months.</span>');
+      }
+      
+      // Update current context
+      state.previousContext = state.currentContext;
+      state.currentContext = 'posts';
+    }
+
+    // Fungsi untuk memuat lebih banyak postingan
+    async function loadMorePosts() {
+      if (!state.postsPagination.hasMore || state.postsPagination.loading) {
+        if (!state.postsPagination.hasMore) {
+          log('<span class="system">No more posts to load.</span>');
+        }
+        return;
+      }
+      
+      log('<span class="system">Loading more posts...</span>');
+      
+      try {
+        state.postsPagination.loading = true;
+        
+        // Hitung tanggal 3 bulan yang lalu
+        const threeMonthsAgo = state.postsPagination.threeMonthsAgo;
+        
+        // Buat query untuk mendapatkan postingan berikutnya
+        const postsQuery = query(
+          collection(db, "posts"),
+          where("createdAt", ">=", threeMonthsAgo),
+          orderBy("createdAt", "asc"),
+          startAfter(state.postsPagination.lastVisible),
+          limit(30)
+        );
+        
+        const querySnapshot = await getDocs(postsQuery);
+        
+        // Tambahkan postingan baru ke state
+        const newPosts = [];
+        querySnapshot.forEach((doc) => {
+          newPosts.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        
+        // Update state posts
+        state.posts = [...state.posts, ...newPosts];
+        
+        // Update lastVisible untuk pagination berikutnya
+        if (querySnapshot.docs.length > 0) {
+          state.postsPagination.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+        }
+        
+        // Cek apakah masih ada postingan lagi
+        state.postsPagination.hasMore = querySnapshot.docs.length === 30;
+        
+        log(`<span class="status-success">success</span>: Loaded ${newPosts.length} more posts`);
+        
+        // Tampilkan postingan baru
+        showPosts();
+        
+        state.postsPagination.loading = false;
+      } catch (error) {
+        log(`<span class="status-error">error</span>: Failed to load more posts: ${error.message}`);
+        state.postsPagination.loading = false;
+      }
+    }
+
+    // Preview media before posting
+    function previewMedia(url, type) {
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'media-upload-preview';
+      
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'media-preview-header';
+      
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'media-preview-title';
+      titleDiv.textContent = type === 'image' ? 'Image Preview' : 'Video Preview';
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'media-preview-remove';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', () => {
+        previewDiv.remove();
+        state.pendingPost.mediaUrl = '';
+        state.pendingPost.mediaType = '';
+      });
+      
+      headerDiv.appendChild(titleDiv);
+      headerDiv.appendChild(removeBtn);
+      previewDiv.appendChild(headerDiv);
+      
+      if (type === 'image') {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'media-preview';
+        img.alt = 'Preview image';
+        previewDiv.appendChild(img);
+      } else if (type === 'video') {
+        const video = document.createElement('video');
+        video.src = url;
+        video.className = 'media-preview';
+        video.controls = true;
+        previewDiv.appendChild(video);
+      }
+      
+      termContent.appendChild(previewDiv);
+      term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+    }
+
+    // Show profile edit form
+    function showProfileEditForm() {
+      isEditingProfile = true;
+      
+      const editContainer = document.createElement('div');
+      editContainer.className = 'profile-edit-container';
+      editContainer.id = 'profile-edit-container';
+      
+      // Username field
+      const usernameField = document.createElement('div');
+      usernameField.className = 'profile-edit-field';
+      
+      const usernameLabel = document.createElement('label');
+      usernameLabel.className = 'profile-edit-label';
+      usernameLabel.textContent = 'Username';
+      
+      const usernameInput = document.createElement('input');
+      usernameInput.className = 'profile-edit-input';
+      usernameInput.type = 'text';
+      usernameInput.value = state.userProfile.username;
+      usernameInput.id = 'edit-username';
+      
+      usernameField.appendChild(usernameLabel);
+      usernameField.appendChild(usernameInput);
+      editContainer.appendChild(usernameField);
+      
+      // Bio field
+      const bioField = document.createElement('div');
+      bioField.className = 'profile-edit-field';
+      
+      const bioLabel = document.createElement('label');
+      bioLabel.className = 'profile-edit-label';
+      bioLabel.textContent = 'Bio';
+      
+      const bioInput = document.createElement('textarea');
+      bioInput.className = 'profile-edit-input';
+      bioInput.value = state.userProfile.bio;
+      bioInput.id = 'edit-bio';
+      bioInput.rows = 3;
+      
+      bioField.appendChild(bioLabel);
+      bioField.appendChild(bioInput);
+      editContainer.appendChild(bioField);
+      
+      // Avatar field
+      const avatarField = document.createElement('div');
+      avatarField.className = 'profile-edit-field';
+      
+      const avatarLabel = document.createElement('label');
+      avatarLabel.className = 'profile-edit-label';
+      avatarLabel.textContent = 'Avatar URL';
+      
+      const avatarInput = document.createElement('input');
+      avatarInput.className = 'profile-edit-input';
+      avatarInput.type = 'text';
+      avatarInput.value = state.userProfile.avatar;
+      avatarInput.id = 'edit-avatar';
+      
+      avatarField.appendChild(avatarLabel);
+      avatarField.appendChild(avatarInput);
+      editContainer.appendChild(avatarField);
+      
+      // Location field
+      const locationField = document.createElement('div');
+      locationField.className = 'profile-edit-field';
+      
+      const locationLabel = document.createElement('label');
+      locationLabel.className = 'profile-edit-label';
+      locationLabel.textContent = 'Location';
+      
+      const locationInput = document.createElement('input');
+      locationInput.className = 'profile-edit-input';
+      locationInput.type = 'text';
+      locationInput.value = state.userProfile.location;
+      locationInput.id = 'edit-location';
+      
+      locationField.appendChild(locationLabel);
+      locationField.appendChild(locationInput);
+      editContainer.appendChild(locationField);
+      
+      // Buttons
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.className = 'profile-edit-buttons';
+      
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'profile-edit-btn';
+      saveBtn.textContent = 'Save';
+      saveBtn.addEventListener('click', saveProfile);
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'profile-edit-btn cancel';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', () => {
+        editContainer.remove();
+        isEditingProfile = false;
+      });
+      
+      buttonsDiv.appendChild(saveBtn);
+      buttonsDiv.appendChild(cancelBtn);
+      editContainer.appendChild(buttonsDiv);
+      
+      termContent.appendChild(editContainer);
+      term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      
+      // Focus on first input
+      usernameInput.focus();
+    }
+
+    // Save profile changes
+    async function saveProfile() {
+      const username = document.getElementById('edit-username').value;
+      const bio = document.getElementById('edit-bio').value;
+      const avatar = document.getElementById('edit-avatar').value;
+      const location = document.getElementById('edit-location').value;
+      
+      try {
+        // Update user document in Firestore
+        const userQuery = query(collection(db, "users"), where("userId", "==", state.userId));
+        const querySnapshot = await getDocs(userQuery);
+        
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          await updateDoc(doc(db, "users", userDoc.id), {
+            username: username,
+            bio: bio,
+            avatar: avatar,
+            location: location
+          });
+          
+          // Update local state
+          state.userProfile.username = username;
+          state.userProfile.bio = bio;
+          state.userProfile.avatar = avatar;
+          state.userProfile.location = location;
+          
+          // Update main user state if username changed
+          if (username !== state.user) {
+            state.user = username;
+          }
+          
+          // Remove edit form
+          const editContainer = document.getElementById('profile-edit-container');
+          if (editContainer) {
+            editContainer.remove();
+          }
+          
+          isEditingProfile = false;
+          log(`<span class="status-success">success</span>: Profile updated successfully`);
+          
+          // Show updated profile
+          showUserProfile();
+        }
+      } catch (error) {
+        log(`<span class="status-error">error</span>: Failed to update profile: ${error.message}`);
+      }
+    }
+
+    // Show user profile
+    function showUserProfile() {
+      const postCount = state.posts.filter(p => p.userId === state.userId).length;
+      const likeCount = state.posts.reduce((a, b) => a + (b.likes || 0), 0);
+      
+      log(`User Profile:
+  Username: @${state.userProfile.username}
+  Bio: ${state.userProfile.bio || 'No bio set'}
+  Location: ${state.userProfile.location || 'Not specified'}
+  Avatar: ${state.userProfile.avatar || 'Not set'}
+  Posts: ${postCount}
+  Likes: ${likeCount}
+  Following: ${state.following.length}
+  Followers: ${Math.floor(Math.random() * 50) + 10}
+  Joined: Today
+  
+  Type "edit profile" to update your profile`);
+  
+  // Update current context
+  state.previousContext = state.currentContext;
+  state.currentContext = 'profile';
+    }
+
+    // Share location in chat
+    function shareLocation() {
+      if (!state.chatUser) {
+        log(`<span class="status-error">error</span>: Location sharing only available in chat mode`);
+        return;
+      }
+      
+      // Try to get user's current location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Create map container
+            const mapDiv = document.createElement('div');
+            mapDiv.className = 'map-container';
+            
+            const iframe = document.createElement('iframe');
+            iframe.className = 'map-preview';
+            iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+            iframe.frameBorder = "0";
+            iframe.style.border = "0";
+            iframe.allowFullscreen = "";
+            
+            mapDiv.appendChild(iframe);
+            
+            log(`📍 Location shared with @${state.chatUser}`);
+            termContent.appendChild(mapDiv);
+            
+            // Save location message to Firestore
+            try {
+              addDoc(collection(db, "messages"), {
+                from: state.user,
+                to: state.chatUser,
+                type: "location",
+                latitude: lat,
+                longitude: lng,
+                createdAt: new Date()
+              });
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to share location: ${error.message}`);
+            }
+            
+            term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+          },
+          (error) => {
+            // If geolocation fails, use a default location
+            const defaultLat = -6.2088; // Jakarta
+            const defaultLng = 106.8456;
+            
+            // Create map container
+            const mapDiv = document.createElement('div');
+            mapDiv.className = 'map-container';
+            
+            const iframe = document.createElement('iframe');
+            iframe.className = 'map-preview';
+            iframe.src = `https://maps.google.com/maps?q=${defaultLat},${defaultLng}&z=15&output=embed`;
+            iframe.frameBorder = "0";
+            iframe.style.border = "0";
+            iframe.allowFullscreen = "";
+            
+            mapDiv.appendChild(iframe);
+            
+            log(`📍 Location shared with @${state.chatUser} (default location)`);
+            termContent.appendChild(mapDiv);
+            
+            // Save location message to Firestore
+            try {
+              addDoc(collection(db, "messages"), {
+                from: state.user,
+                to: state.chatUser,
+                type: "location",
+                latitude: defaultLat,
+                longitude: defaultLng,
+                createdAt: new Date()
+              });
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to share location: ${error.message}`);
+            }
+            
+            term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+          }
+        );
+      } else {
+        // Browser doesn't support geolocation
+        const defaultLat = -6.2088; // Jakarta
+        const defaultLng = 106.8456;
+        
+        // Create map container
+        const mapDiv = document.createElement('div');
+        mapDiv.className = 'map-container';
+        
+        const iframe = document.createElement('iframe');
+        iframe.className = 'map-preview';
+        iframe.src = `https://maps.google.com/maps?q=${defaultLat},${defaultLng}&z=15&output=embed`;
+        iframe.frameBorder = "0";
+        iframe.style.border = "0";
+        iframe.allowFullscreen = "";
+        
+        mapDiv.appendChild(iframe);
+        
+        log(`📍 Location shared with @${state.chatUser} (default location)`);
+        termContent.appendChild(mapDiv);
+        
+        // Save location message to Firestore
+        try {
+          addDoc(collection(db, "messages"), {
+            from: state.user,
+            to: state.chatUser,
+            type: "location",
+            latitude: defaultLat,
+            longitude: defaultLng,
+            createdAt: new Date()
+          });
+        } catch (error) {
+          log(`<span class="status-error">error</span>: Failed to share location: ${error.message}`);
+        }
+        
+        term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      }
+    }
+
+    // Fungsi untuk kembali ke konteks sebelumnya
+    function goBack() {
+      if (state.currentContext === 'home') {
+        log(`<span class="status-error">error</span>: You're already at the home screen`);
+        return;
+      }
+      
+      // Simpan konteks saat ini sebagai previous
+      const tempContext = state.currentContext;
+      
+      // Kembalikan ke konteks sebelumnya
+      state.currentContext = state.previousContext || 'home';
+      state.previousContext = tempContext;
+      
+      // Hapus konteks spesifik jika ada
+      if (state.chatUser && state.currentContext !== 'chat') {
+        state.chatUser = null;
+      }
+      
+      if (state.viewingProfile && state.currentContext !== 'profile') {
+        state.viewingProfile = null;
+      }
+      
+      // Tampilkan pesan dan konten yang sesuai
+      switch (state.currentContext) {
+        case 'home':
+          log(`<span class="status-success">success</span>: Returned to home screen`);
+          break;
+        case 'chat':
+          log(`<span class="status-success">success</span>: Returned to chat with @${state.chatUser}`);
+          break;
+        case 'profile':
+          if (state.viewingProfile) {
+            log(`<span class="status-success">success</span>: Returned to @${state.viewingProfile}'s profile`);
+          } else {
+            log(`<span class="status-success">success</span>: Returned to your profile`);
+            showUserProfile();
+          }
+          break;
+        case 'posts':
+          log(`<span class="status-success">success</span>: Returned to posts feed`);
+          showPosts();
+          break;
+        case 'search':
+          log(`<span class="status-success">success</span>: Returned to search results`);
+          break;
+        case 'music':
+          log(`<span class="status-success">success</span>: Returned to music player`);
+          break;
+        case 'radio':
+          log(`<span class="status-success">success</span>: Returned to radio player`);
+          break;
+        case 'notifications':
+          log(`<span class="status-success">success</span>: Returned to notifications`);
+          // Tampilkan notifikasi lagi
+          if (state.notifications.length === 0) log('No notifications.');
+          else state.notifications.forEach(n => log(`🔔 ${n}`));
+          break;
+        default:
+          log(`<span class="status-success">success</span>: Returned to previous screen`);
+          state.currentContext = 'home';
+      }
+    }
+
+    // Fungsi untuk memuat postingan terbaru
+    async function loadNewPosts() {
+      try {
+        log('<span class="system">Loading newest posts...</span>');
+        
+        // Reset dan load postingan dari awal
+        await loadPosts(true);
+        
+        // Tampilkan postingan
+        showPosts();
+        
+        // Update current context
+        state.previousContext = state.currentContext;
+        state.currentContext = 'posts';
+      } catch (error) {
+        log(`<span class="status-error">error</span>: Failed to load new posts: ${error.message}`);
+      }
+    }
+
+    async function handleCommand(cmd) {
+      const [command, ...args] = cmd.split(" ");
+
+      if (isEditingProfile) {
+        log(`<span class="status-error">error</span>: Please finish editing your profile first`);
+        return;
+      }
+
+      if (state.chatUser && command !== "exit" && command !== "back") {
+        if (command === "reply") {
+          const replyText = cmd.match(/"(.+)"/);
+          if (replyText) {
+            log(`@${state.user} → @${state.chatUser}: ${replyText[1]}`);
+            
+            // Save chat message to Firestore
+            try {
+              await addDoc(collection(db, "messages"), {
+                from: state.user,
+                to: state.chatUser,
+                text: replyText[1],
+                createdAt: new Date()
+              });
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to send message: ${error.message}`);
+            }
+          } else {
+            log('Usage: reply "your message"');
+          }
+        } else if (command === "open" && args[0] === "voice") {
+          log(`🎤 Voice note sent to @${state.chatUser}`);
+          
+          // Save voice note to Firestore
+          try {
+            await addDoc(collection(db, "messages"), {
+              from: state.user,
+              to: state.chatUser,
+              type: "voice",
+              createdAt: new Date()
+            });
+          } catch (error) {
+            log(`<span class="status-error">error</span>: Failed to send voice note: ${error.message}`);
+          }
+        } else if (command === "lokasi") {
+          shareLocation();
+        } else {
+          log(`@${state.user} → @${state.chatUser}: ${cmd}`);
+          
+          // Save chat message to Firestore
+          try {
+            await addDoc(collection(db, "messages"), {
+              from: state.user,
+              to: state.chatUser,
+              text: cmd,
+              createdAt: new Date()
+            });
+          } catch (error) {
+            log(`<span class="status-error">error</span>: Failed to send message: ${error.message}`);
+          }
+        }
+        return;
+      }
+
+      switch(command.toLowerCase()) {
+        case 'help':
+          showHelp();
+          break;
+
+        case 'post':
+          const postMatch = cmd.match(/"(.+)"/);
+          if (postMatch) {
+            let postText = postMatch[1];
+            let postImage = null;
+            let postVideo = null;
+            
+            // Check for image or video
+            const mediaMatch = cmd.match(/\+ "([^"]+)"/);
+            if (mediaMatch) {
+              const mediaUrl = mediaMatch[1];
+              if (mediaUrl.includes('.jpg') || mediaUrl.includes('.png') || mediaUrl.includes('.gif')) {
+                postImage = mediaUrl;
+                // Show preview
+                previewMedia(mediaUrl, 'image');
+              } else if (mediaUrl.includes('.mp4') || mediaUrl.includes('.webm')) {
+                postVideo = mediaUrl;
+                // Show preview
+                previewMedia(mediaUrl, 'video');
+              }
+            }
+            
+            // Store pending post
+            state.pendingPost.text = postText;
+            state.pendingPost.mediaUrl = postImage || postVideo;
+            state.pendingPost.mediaType = postImage ? 'image' : (postVideo ? 'video' : '');
+            
+            // Confirm post
+            log(`Ready to post: "${postText}" ${postImage ? '[Image]' : ''} ${postVideo ? '[Video]' : ''}`);
+            log('Type "confirm" to post or "cancel" to discard');
+          } else log(`<span class="status-error">error</span>: Usage: post "your text"`);
+          break;
+
+        case 'confirm':
+          if (state.pendingPost.text) {
+            try {
+              // Save post to Firestore
+              const docRef = await addDoc(collection(db, "posts"), {
+                user: state.user,
+                userId: state.userId,
+                text: state.pendingPost.text,
+                likes: 0,
+                image: state.pendingPost.mediaType === 'image' ? state.pendingPost.mediaUrl : null,
+                video: state.pendingPost.mediaType === 'video' ? state.pendingPost.mediaUrl : null,
+                createdAt: new Date()
+              });
+              
+              log(`<span class="status-success">success</span>: Post created with ID: ${docRef.id}`);
+              
+              // Reset pending post
+              state.pendingPost = {
+                text: '',
+                mediaUrl: '',
+                mediaType: ''
+              };
+              
+              // Remove preview if exists
+              const previewElements = document.querySelectorAll('.media-upload-preview');
+              previewElements.forEach(el => el.remove());
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to create post: ${error.message}`);
+            }
+          } else {
+            log(`<span class="status-error">error</span>: No pending post to confirm`);
+          }
+          break;
+
+        case 'cancel':
+          if (state.pendingPost.text) {
+            state.pendingPost = {
+              text: '',
+              mediaUrl: '',
+              mediaType: ''
+            };
+            
+            // Remove preview if exists
+            const previewElements = document.querySelectorAll('.media-upload-preview');
+            previewElements.forEach(el => el.remove());
+            
+            log(`<span class="status-success">success</span>: Post cancelled`);
+          } else {
+            log(`<span class="status-error">error</span>: No pending post to cancel`);
+          }
+          break;
+
+        case 'show':
+          if (args[0] === 'posts') {
+            showPosts();
+          } else log(`<span class="status-error">error</span>: Usage: show posts`);
+          break;
+
+        case 'comment':
+          if (args[0] && args[0].startsWith('@')) {
+            const username = args[0].substring(1);
+            const commentText = cmd.match(/"(.+)"/);
+            if (commentText) {
+              log(`💬 Commented on @${username}'s post: ${commentText[1]}`);
+              
+              // Save comment to Firestore
+              try {
+                await addDoc(collection(db, "comments"), {
+                  user: state.user,
+                  userId: state.userId,
+                  targetUser: username,
+                  text: commentText[1],
+                  createdAt: new Date()
+                });
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to add comment: ${error.message}`);
+              }
+            } else log(`<span class="status-error">error</span>: Usage: comment @username "text"`);
+          } else log(`<span class="status-error">error</span>: Usage: comment @username "text"`);
+          break;
+
+        case 'like':
+          if (args[0] && args[0].startsWith('@')) {
+            const username = args[0].substring(1);
+            log(`❤️ Liked @${username}'s post`);
+            
+            // Save like to Firestore
+            try {
+              await addDoc(collection(db, "likes"), {
+                user: state.user,
+                userId: state.userId,
+                targetUser: username,
+                createdAt: new Date()
+              });
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to add like: ${error.message}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: like @username`);
+          break;
+
+        case 'share':
+          if (args[0] && args[0].startsWith('@')) {
+            const username = args[0].substring(1);
+            log(`🔄 Shared @${username}'s post`);
+            
+            // Save share to Firestore
+            try {
+              await addDoc(collection(db, "shares"), {
+                user: state.user,
+                userId: state.userId,
+                targetUser: username,
+                createdAt: new Date()
+              });
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to share post: ${error.message}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: share @username`);
+          break;
+
+        case 'chat':
+          if (args[0] && args[0].startsWith('@')) {
+            const user = args[0].substring(1);
+            state.chatUser = user;
+            log(`<span class="status-success">success</span>: Chat mode started with @${user}. Type message or 'back' to quit.`);
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'chat';
+            
+            // Load chat history
+            try {
+              const messagesQuery = query(
+                collection(db, "messages"),
+                where("from", "in", [state.user, user]),
+                where("to", "in", [state.user, user]),
+                orderBy("createdAt", "desc")
+              );
+              
+              const querySnapshot = await getDocs(messagesQuery);
+              if (!querySnapshot.empty) {
+                log(`<span class="system">Chat history with @${user}:</span>`);
+                querySnapshot.forEach((doc) => {
+                  const message = doc.data();
+                  const timestamp = new Date(message.createdAt.toDate()).toLocaleString();
+                  
+                  if (message.type === "location") {
+                    log(`@${message.from} → @${message.to}: 📍 Shared location <span class="timestamp">[${timestamp}]</span>`);
+                    
+                    // Create map container
+                    const mapDiv = document.createElement('div');
+                    mapDiv.className = 'map-container';
+                    
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'map-preview';
+                    iframe.src = `https://maps.google.com/maps?q=${message.latitude},${message.longitude}&z=15&output=embed`;
+                    iframe.frameBorder = "0";
+                    iframe.style.border = "0";
+                    iframe.allowFullscreen = "";
+                    
+                    mapDiv.appendChild(iframe);
+                    termContent.appendChild(mapDiv);
+                  } else if (message.type === "voice") {
+                    log(`@${message.from} → @${message.to}: 🎤 Voice note <span class="timestamp">[${timestamp}]</span>`);
+                  } else {
+                    log(`@${message.from} → @${message.to}: ${message.text} <span class="timestamp">[${timestamp}]</span>`);
+                  }
+                });
+              }
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to load chat history: ${error.message}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: chat @username`);
+          break;
+
+        case 'notif':
+          if (state.notifications.length === 0) log('No notifications.');
+          else state.notifications.forEach(n => log(`🔔 ${n}`));
+          
+          // Update current context
+          state.previousContext = state.currentContext;
+          state.currentContext = 'notifications';
+          break;
+
+        case 'run':
+          if (args[0] === 'profile') {
+            showUserProfile();
+          } else if (args[0] === 'music') {
+            if (!state.music.currentTrack) {
+              state.music.trackIndex = 0;
+              state.music.currentTrack = state.music.tracks[state.music.trackIndex];
+            }
+            
+            if (state.music.isPlaying) {
+              log(`<span class="status-success">success</span>: Pausing: ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}`);
+              state.music.isPlaying = false;
+            } else {
+              state.music.isPlaying = true;
+              log(`<span class="status-success">success</span>: Now playing: ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}`);
+              
+              // Create music player UI
+              const playerDiv = document.createElement('div');
+              playerDiv.className = 'music-player';
+              playerDiv.innerHTML = `
+                <div>🎵 ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}</div>
+                <div class="music-controls">
+                  <button class="music-btn" id="prev-btn">prev</button>
+                  <button class="music-btn" id="play-pause-btn">${state.music.isPlaying ? 'pause' : 'play'}</button>
+                  <button class="music-btn" id="stop-btn">stop</button>
+                  <button class="music-btn" id="next-btn">next</button>
+                </div>
+              `;
+              termContent.appendChild(playerDiv);
+              
+              // Add event listeners
+              document.getElementById('play-pause-btn').addEventListener('click', () => {
+                if (state.music.isPlaying) {
+                  state.music.isPlaying = false;
+                  document.getElementById('play-pause-btn').textContent = 'play';
+                  log('<span class="status-success">success</span>: Music paused');
+                } else {
+                  state.music.isPlaying = true;
+                  document.getElementById('play-pause-btn').textContent = 'pause';
+                  log('<span class="status-success">success</span>: Music resumed');
+                }
+              });
+              
+              document.getElementById('stop-btn').addEventListener('click', () => {
+                state.music.isPlaying = false;
+                state.music.currentTrack = null;
+                log('<span class="status-success">success</span>: Music stopped');
+                // Remove the player UI
+                playerDiv.remove();
+              });
+              
+              document.getElementById('prev-btn').addEventListener('click', () => {
+                state.music.trackIndex = (state.music.trackIndex - 1 + state.music.tracks.length) % state.music.tracks.length;
+                state.music.currentTrack = state.music.tracks[state.music.trackIndex];
+                log(`<span class="status-success">success</span>: Now playing: ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}`);
+                // Update player UI
+                playerDiv.querySelector('div').textContent = `🎵 ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}`;
+              });
+              
+              document.getElementById('next-btn').addEventListener('click', () => {
+                state.music.trackIndex = (state.music.trackIndex + 1) % state.music.tracks.length;
+                state.music.currentTrack = state.music.tracks[state.music.trackIndex];
+                log(`<span class="status-success">success</span>: Now playing: ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}`);
+                // Update player UI
+                playerDiv.querySelector('div').textContent = `🎵 ${state.music.currentTrack.title} by ${state.music.currentTrack.artist}`;
+              });
+            }
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'music';
+          } else if (args[0] === 'radio') {
+            if (!state.music.currentRadio) {
+              state.music.radioIndex = 0;
+              state.music.currentRadio = state.music.radios[state.music.radioIndex];
+            }
+            
+            if (state.music.isPlaying) {
+              log(`<span class="status-success">success</span>: Stopping: ${state.music.currentRadio.name} (${state.music.currentRadio.genre})`);
+              state.music.isPlaying = false;
+            } else {
+              state.music.isPlaying = true;
+              log(`<span class="status-success">success</span>: Now playing: ${state.music.currentRadio.name} (${state.music.currentRadio.genre})`);
+              
+              // Create radio player UI
+              const playerDiv = document.createElement('div');
+              playerDiv.className = 'music-player';
+              playerDiv.innerHTML = `
+                <div>📻 ${state.music.currentRadio.name} (${state.music.currentRadio.genre})</div>
+                <div class="music-controls">
+                  <button class="music-btn" id="prev-radio-btn">prev</button>
+                  <button class="music-btn" id="play-pause-radio-btn">${state.music.isPlaying ? 'pause' : 'play'}</button>
+                  <button class="music-btn" id="stop-radio-btn">stop</button>
+                  <button class="music-btn" id="next-radio-btn">next</button>
+                </div>
+              `;
+              termContent.appendChild(playerDiv);
+              
+              // Add event listeners
+              document.getElementById('play-pause-radio-btn').addEventListener('click', () => {
+                if (state.music.isPlaying) {
+                  state.music.isPlaying = false;
+                  document.getElementById('play-pause-radio-btn').textContent = 'play';
+                  log('<span class="status-success">success</span>: Radio paused');
+                } else {
+                  state.music.isPlaying = true;
+                  document.getElementById('play-pause-radio-btn').textContent = 'pause';
+                  log('<span class="status-success">success</span>: Radio resumed');
+                }
+              });
+              
+              document.getElementById('stop-radio-btn').addEventListener('click', () => {
+                state.music.isPlaying = false;
+                state.music.currentRadio = null;
+                log('<span class="status-success">success</span>: Radio stopped');
+                // Remove the player UI
+                playerDiv.remove();
+              });
+              
+              document.getElementById('prev-radio-btn').addEventListener('click', () => {
+                state.music.radioIndex = (state.music.radioIndex - 1 + state.music.radios.length) % state.music.radios.length;
+                state.music.currentRadio = state.music.radios[state.music.radioIndex];
+                log(`<span class="status-success">success</span>: Now playing: ${state.music.currentRadio.name} (${state.music.currentRadio.genre})`);
+                // Update player UI
+                playerDiv.querySelector('div').textContent = `📻 ${state.music.currentRadio.name} (${state.music.currentRadio.genre})`;
+              });
+              
+              document.getElementById('next-radio-btn').addEventListener('click', () => {
+                state.music.radioIndex = (state.music.radioIndex + 1) % state.music.radios.length;
+                state.music.currentRadio = state.music.radios[state.music.radioIndex];
+                log(`<span class="status-success">success</span>: Now playing: ${state.music.currentRadio.name} (${state.music.currentRadio.genre})`);
+                // Update player UI
+                playerDiv.querySelector('div').textContent = `📻 ${state.music.currentRadio.name} (${state.music.currentRadio.genre})`;
+              });
+            }
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'radio';
+          } else log(`<span class="status-error">error</span>: Usage: run profile, run music, or run radio`);
+          break;
+
+        case 'list':
+          if (args[0] === 'music') {
+            log(`Available Music:`);
+            state.music.tracks.forEach((track, index) => {
+              log(`${index + 1}. ${track.title} - ${track.artist}`);
+            });
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'music';
+          } else if (args[0] === 'radio') {
+            log(`Available Radio Stations:`);
+            state.music.radios.forEach((radio, index) => {
+              log(`${index + 1}. ${radio.name} - ${radio.genre}`);
+            });
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'radio';
+          } else log(`<span class="status-error">error</span>: Usage: list music or list radio`);
+          break;
+
+        case 'open':
+          if (args[0] === 'profile' && args[1] && args[1].startsWith('@')) {
+            const username = args[1].substring(1);
+            const user = state.users.find(u => u.username === username);
+            if (user) {
+              state.viewingProfile = username;
+              showTypingEffect(`@${username}'s Profile:
+  Bio: ${user.bio}
+  Posts: ${user.posts}
+  Following: ${Math.floor(Math.random() * 30) + 5}
+  Followers: ${Math.floor(Math.random() * 100) + 20}`);
+              
+              // Update current context
+              state.previousContext = state.currentContext;
+              state.currentContext = 'profile';
+            } else {
+              log(`<span class="status-error">error</span>: User @${username} not found.`);
+            }
+          } else if (args[0] === 'voice') {
+            if (state.chatUser) {
+              log(`🎤 Voice note sent to @${state.chatUser}`);
+              
+              // Save voice note to Firestore
+              try {
+                await addDoc(collection(db, "messages"), {
+                  from: state.user,
+                  to: state.chatUser,
+                  type: "voice",
+                  createdAt: new Date()
+                });
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to send voice note: ${error.message}`);
+              }
+            } else {
+              log(`<span class="status-error">error</span>: Voice notes can only be sent in chat mode.`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: open profile @username or open voice (in chat mode)`);
+          break;
+
+        case 'follow':
+          if (args[0] && args[0].startsWith('@')) {
+            const username = args[0].substring(1);
+            if (!state.following.includes(username)) {
+              try {
+                // Update user document in Firestore
+                const userQuery = query(collection(db, "users"), where("userId", "==", state.userId));
+                const querySnapshot = await getDocs(userQuery);
+                
+                if (!querySnapshot.empty) {
+                  const userDoc = querySnapshot.docs[0];
+                  await updateDoc(doc(db, "users", userDoc.id), {
+                    following: arrayUnion(username)
+                  });
+                  
+                  state.following.push(username);
+                  log(`<span class="status-success">success</span>: Now following @${username}`);
+                }
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to follow user: ${error.message}`);
+              }
+            } else {
+              log(`<span class="status-error">error</span>: You are already following @${username}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: follow @username`);
+          break;
+
+        case 'unfollow':
+          if (args[0] && args[0].startsWith('@')) {
+            const username = args[0].substring(1);
+            const index = state.following.indexOf(username);
+            if (index !== -1) {
+              try {
+                // Update user document in Firestore
+                const userQuery = query(collection(db, "users"), where("userId", "==", state.userId));
+                const querySnapshot = await getDocs(userQuery);
+                
+                if (!querySnapshot.empty) {
+                  const userDoc = querySnapshot.docs[0];
+                  await updateDoc(doc(db, "users", userDoc.id), {
+                    following: arrayRemove(username)
+                  });
+                  
+                  state.following.splice(index, 1);
+                  log(`<span class="status-success">success</span>: Unfollowed @${username}`);
+                }
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to unfollow user: ${error.message}`);
+              }
+            } else {
+              log(`<span class="status-error">error</span>: You are not following @${username}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: unfollow @username`);
+          break;
+
+        case 'block':
+          if (args[0] && args[0].startsWith('@')) {
+            const username = args[0].substring(1);
+            if (!state.blocked.includes(username)) {
+              try {
+                // Update user document in Firestore
+                const userQuery = query(collection(db, "users"), where("userId", "==", state.userId));
+                const querySnapshot = await getDocs(userQuery);
+                
+                if (!querySnapshot.empty) {
+                  const userDoc = querySnapshot.docs[0];
+                  await updateDoc(doc(db, "users", userDoc.id), {
+                    blocked: arrayUnion(username)
+                  });
+                  
+                  state.blocked.push(username);
+                  log(`<span class="status-success">success</span>: Blocked @${username}`);
+                }
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to block user: ${error.message}`);
+              }
+            } else {
+              log(`<span class="status-error">error</span>: You have already blocked @${username}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: block @username`);
+          break;
+
+        case 'report':
+          if (args[0] === 'post' && args[1] && args[1].startsWith('@')) {
+            const username = args[1].substring(1);
+            log(`<span class="status-success">success</span>: Reported post from @${username}. Thank you for helping keep the community safe.`);
+            
+            // Save report to Firestore
+            try {
+              await addDoc(collection(db, "reports"), {
+                reporter: state.user,
+                reporterId: state.userId,
+                reportedUser: username,
+                type: "post",
+                createdAt: new Date()
+              });
+            } catch (error) {
+              log(`<span class="status-error">error</span>: Failed to submit report: ${error.message}`);
+            }
+          } else log(`<span class="status-error">error</span>: Usage: report post @username`);
+          break;
+
+        case 'reply':
+          if (state.chatUser) {
+            const replyText = cmd.match(/"(.+)"/);
+            if (replyText) {
+              log(`@${state.user} → @${state.chatUser}: ${replyText[1]}`);
+              
+              // Save chat message to Firestore
+              try {
+                await addDoc(collection(db, "messages"), {
+                  from: state.user,
+                  to: state.chatUser,
+                  text: replyText[1],
+                  createdAt: new Date()
+                });
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to send message: ${error.message}`);
+              }
+            } else {
+              log(`<span class="status-error">error</span>: Usage: reply "your message"`);
+            }
+          } else {
+            log(`<span class="status-error">error</span>: Reply can only be used in chat mode.`);
+          }
+          break;
+
+        case 'back':
+          goBack();
+          break;
+
+        case 'clear':
+          termContent.innerHTML = '';
+          break;
+
+        case 'exit':
+          if (state.chatUser) {
+            log(`<span class="status-success">success</span>: Exited chat with @${state.chatUser}`);
+            state.chatUser = null;
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'home';
+          } else if (state.currentContext === 'music' || state.currentContext === 'radio') {
+            log(`<span class="status-success">success</span>: Exited ${state.currentContext} player`);
+            
+            // Update current context
+            state.previousContext = state.currentContext;
+            state.currentContext = 'home';
+          } else {
+            log(`<span class="status-error">error</span>: Not in a mode that can be exited.`);
+          }
+          break;
+
+        case 'edit':
+          if (args[0] === 'profile') {
+            showProfileEditForm();
+          } else log(`<span class="status-error">error</span>: Usage: edit profile`);
+          break;
+
+        case 'delete':
+          const postTitle = cmd.match(/"(.+)"/);
+          if (postTitle) {
+            const title = postTitle[1];
+            
+            // Find posts by the current user with matching title
+            const userPosts = state.posts.filter(post => 
+              post.userId === state.userId && post.text.includes(title)
+            );
+            
+            if (userPosts.length === 0) {
+              log(`<span class="status-error">error</span>: No posts found with title containing "${title}"`);
+            } else if (userPosts.length > 1) {
+              log(`<span class="status-error">error</span>: Multiple posts found. Please be more specific.`);
+            } else {
+              const postToDelete = userPosts[0];
+              
+              try {
+                // Delete post from Firestore
+                await deleteDoc(doc(db, "posts", postToDelete.id));
+                
+                // Remove from local state
+                const index = state.posts.findIndex(p => p.id === postToDelete.id);
+                if (index !== -1) {
+                  state.posts.splice(index, 1);
+                }
+                
+                log(`<span class="status-success">success</span>: Post deleted successfully`);
+              } catch (error) {
+                log(`<span class="status-error">error</span>: Failed to delete post: ${error.message}`);
+              }
+            }
+          } else {
+            log(`<span class="status-error">error</span>: Usage: delete "judul post"`);
+          }
+          break;
+
+        case 'lokasi':
+          shareLocation();
+          break;
+          
+        case 'new':
+          if (args[0] === 'posts') {
+            loadNewPosts();
+          } else {
+            log(`<span class="status-error">error</span>: Usage: new posts`);
+          }
+          break;
+          
+        case 'load':
+          if (args[0] === 'more') {
+            loadMorePosts();
+          } else {
+            log(`<span class="status-error">error</span>: Usage: load more`);
+          }
+          break;
+          
+        case 'toggle':
+          if (args[0] === 'autorefresh') {
+            if (state.autoRefresh.enabled) {
+              state.autoRefresh.enabled = false;
+              log(`<span class="status-success">success</span>: Auto-refresh disabled`);
+            } else {
+              state.autoRefresh.enabled = true;
+              startAutoRefresh();
+              log(`<span class="status-success">success</span>: Auto-refresh enabled`);
+            }
+          } else {
+            log(`<span class="status-error">error</span>: Usage: toggle autorefresh`);
+          }
+          break;
+
+        default:
+          log(`<span class="status-error">error</span>: Unknown command: ${command}. Type 'help' for available commands.`);
+      }
+    }
+
+    // Handle input focus and blur events for auto scroll behavior
+    input.addEventListener('focus', () => {
+      isTyping = true;
+      // Scroll to bottom to show the input field
+      setTimeout(() => {
+        term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      }, 100);
+    });
+
+    input.addEventListener('blur', () => {
+      isTyping = false;
+      // Don't auto scroll immediately after blur, let the user see the result
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && input.value.trim() !== '') {
+        const cmd = input.value.trim();
+        log(`>_ ${cmd}`);
+        handleCommand(cmd);
+        input.value = '';
+        inputAutocompleteSuggestions.style.display = 'none';
+        
+        // After executing command, scroll to bottom to see the result
+        setTimeout(() => {
+          term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+        }, 100);
+      } else if (e.key === 'Escape') {
+        inputAutocompleteSuggestions.style.display = 'none';
+      } else if (e.key === 'ArrowRight') {
+        // If autocomplete is visible and we press right arrow, accept first suggestion
+        if (inputAutocompleteSuggestions.style.display === 'block') {
+          const firstSuggestion = inputAutocompleteSuggestions.querySelector('.input-autocomplete-suggestion');
+          if (firstSuggestion) {
+            firstSuggestion.click();
+            e.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Enhanced autocomplete functionality for command input
+    input.addEventListener('input', e => {
+      const value = e.target.value;
+      const cursorPosition = input.selectionStart;
+      
+      // Find the word at cursor position
+      const textBeforeCursor = value.substring(0, cursorPosition);
+      const textAfterCursor = value.substring(cursorPosition);
+      
+      // Find the last word boundary before cursor
+      const lastSpaceIndex = textBeforeCursor.lastIndexOf(' ');
+      const lastWordStart = lastSpaceIndex !== -1 ? lastSpaceIndex + 1 : 0;
+      const lastWord = textBeforeCursor.substring(lastWordStart);
+      
+      // Check if we're typing a username or hashtag
+      if (lastWord.startsWith('@') && lastWord.length > 1) {
+        const username = lastWord.substring(1);
+        const matchingUsers = sampleData.users.filter(user => 
+          user.toLowerCase().includes(username.toLowerCase())
+        );
+        
+        if (matchingUsers.length > 0) {
+          showInputAutocomplete(matchingUsers.map(u => `@${u}`), lastWordStart, lastWord.length);
+        } else {
+          inputAutocompleteSuggestions.style.display = 'none';
+        }
+      } else if (lastWord.startsWith('#') && lastWord.length > 1) {
+        const tag = lastWord.substring(1);
+        const matchingTags = sampleData.hashtags.filter(hashtag => 
+          hashtag.toLowerCase().includes(tag.toLowerCase())
+        );
+        
+        if (matchingTags.length > 0) {
+          showInputAutocomplete(matchingTags.map(t => `#${t}`), lastWordStart, lastWord.length);
+        } else {
+          inputAutocompleteSuggestions.style.display = 'none';
+        }
+      } else {
+        inputAutocompleteSuggestions.style.display = 'none';
+      }
+    });
+
+    function showInputAutocomplete(suggestions, wordStart, wordLength) {
+      inputAutocompleteSuggestions.innerHTML = '';
+      
+      suggestions.forEach(suggestion => {
+        const div = document.createElement('div');
+        div.className = 'input-autocomplete-suggestion';
+        div.textContent = suggestion;
+        
+        div.addEventListener('click', () => {
+          const value = input.value;
+          const newValue = value.substring(0, wordStart) + suggestion + value.substring(wordStart + wordLength);
+          input.value = newValue;
+          inputAutocompleteSuggestions.style.display = 'none';
+          input.focus();
+          
+          // Set cursor position after the inserted word
+          const newCursorPos = wordStart + suggestion.length;
+          input.setSelectionRange(newCursorPos, newCursorPos);
+        });
+        
+        inputAutocompleteSuggestions.appendChild(div);
+      });
+      
+      inputAutocompleteSuggestions.style.display = 'block';
+    }
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', e => {
+      if (!input.contains(e.target) && !inputAutocompleteSuggestions.contains(e.target)) {
+        inputAutocompleteSuggestions.style.display = 'none';
+      }
+      
+      if (!search.contains(e.target) && !autocompleteSuggestions.contains(e.target)) {
+        autocompleteSuggestions.style.display = 'none';
+      }
+    });
+
+    // Enhanced autocomplete functionality for search
+    search.addEventListener('input', e => {
+      const value = e.target.value.toLowerCase();
+      if (value.length < 2) {
+        autocompleteSuggestions.style.display = 'none';
+        return;
+      }
+
+      const suggestions = [];
+      
+      // Add user suggestions
+      sampleData.users.forEach(user => {
+        if (user.includes(value)) {
+          suggestions.push({ type: 'user', value: `@${user}`, display: `@${user}` });
+        }
+      });
+      
+      // Add hashtag suggestions
+      sampleData.hashtags.forEach(tag => {
+        if (tag.includes(value)) {
+          suggestions.push({ type: 'hashtag', value: `#${tag}`, display: `#${tag}` });
+        }
+      });
+      
+      // Add command suggestions
+      sampleData.commands.forEach(cmd => {
+        if (cmd.includes(value)) {
+          suggestions.push({ type: 'command', value: cmd, display: cmd });
+        }
+      });
+      
+      // Add post suggestions
+      state.posts.forEach(post => {
+        if (post.text.toLowerCase().includes(value) || post.user.toLowerCase().includes(value)) {
+          // Truncate post text for display
+          const truncatedText = post.text.length > 30 
+            ? post.text.substring(0, 30) + '...' 
+            : post.text;
+          suggestions.push({ 
+            type: 'post', 
+            value: post.id, 
+            display: `Post: ${truncatedText} by @${post.user}`,
+            post: post
+          });
+        }
+      });
+
+      // Display suggestions
+      if (suggestions.length > 0) {
+        autocompleteSuggestions.innerHTML = '';
+        suggestions.slice(0, 5).forEach(suggestion => {
+          const div = document.createElement('div');
+          div.className = 'autocomplete-suggestion';
+          div.textContent = suggestion.display;
+          div.addEventListener('click', () => {
+            search.value = suggestion.value;
+            autocompleteSuggestions.style.display = 'none';
+            performSearch(suggestion.value, suggestion.type);
+          });
+          autocompleteSuggestions.appendChild(div);
+        });
+        autocompleteSuggestions.style.display = 'block';
+      } else {
+        autocompleteSuggestions.style.display = 'none';
+      }
+    });
+
+    // Search functionality
+    search.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const searchTerm = search.value.trim();
+        if (searchTerm) {
+          performSearch(searchTerm);
+          autocompleteSuggestions.style.display = 'none';
+        }
+      }
+    });
+
+    function performSearch(searchTerm, type = null) {
+      // Clear previous search results
+      const existingResults = document.querySelectorAll('.search-results');
+      existingResults.forEach(result => result.remove());
+      
+      // Create search results container
+      const resultsDiv = document.createElement('div');
+      resultsDiv.className = 'search-results';
+      resultsDiv.innerHTML = `<div class="system">Search results for "${searchTerm}":</div>`;
+      
+      let hasResults = false;
+      
+      // If a specific type is provided, only search for that type
+      if (type === 'user') {
+        // Search for specific user
+        const user = state.users.find(u => u.username === searchTerm.substring(1));
+        if (user) {
+          hasResults = true;
+          const userSection = document.createElement('div');
+          userSection.className = 'search-section';
+          userSection.innerHTML = `<div class="search-section-title">Account</div>`;
+          
+          const userResult = document.createElement('div');
+          userResult.className = 'account-result';
+          userResult.innerHTML = `
+            <div class="account-avatar">${user.username.charAt(0).toUpperCase()}</div>
+            <div class="account-info">
+              <div class="account-username">@${user.username}</div>
+              <div class="account-bio">${user.bio}</div>
+            </div>
+          `;
+          
+          userResult.addEventListener('click', () => {
+            log(`open profile @${user.username}`);
+            handleCommand(`open profile @${user.username}`);
+          });
+          
+          userSection.appendChild(userResult);
+          resultsDiv.appendChild(userSection);
+        }
+      } else if (type === 'post') {
+        // Search for specific post
+        const post = state.posts.find(p => p.id === searchTerm);
+        if (post) {
+          hasResults = true;
+          const postSection = document.createElement('div');
+          postSection.className = 'search-section';
+          postSection.innerHTML = `<div class="search-section-title">Post</div>`;
+          
+          const postResult = document.createElement('div');
+          postResult.className = 'post-result';
+          
+          const timestamp = new Date(post.createdAt.toDate()).toLocaleString();
+          postResult.innerHTML = `
+            <div class="post-header">
+              <div class="post-username">@${post.user}</div>
+              <div class="post-timestamp">${timestamp}</div>
+            </div>
+            <div class="post-content">${post.text}</div>
+            <div class="post-stats">Likes: ${post.likes || 0}</div>
+          `;
+          
+          postResult.addEventListener('click', () => {
+            log(`Viewing post by @${post.user}: ${post.text}`);
+          });
+          
+          postSection.appendChild(postResult);
+          resultsDiv.appendChild(postSection);
+        }
+      } else {
+        // General search - show accounts and posts
+        // Accounts section
+        const matchingUsers = state.users.filter(user => 
+          user.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
+          user.bio.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        if (matchingUsers.length > 0) {
+          hasResults = true;
+          const accountsSection = document.createElement('div');
+          accountsSection.className = 'search-section';
+          accountsSection.innerHTML = `<div class="search-section-title">Accounts</div>`;
+          
+          matchingUsers.forEach(user => {
+            const userResult = document.createElement('div');
+            userResult.className = 'account-result';
+            userResult.innerHTML = `
+              <div class="account-avatar">${user.username.charAt(0).toUpperCase()}</div>
+              <div class="account-info">
+                <div class="account-username">@${user.username}</div>
+                <div class="account-bio">${user.bio}</div>
+              </div>
+            `;
+            
+            userResult.addEventListener('click', () => {
+              log(`open profile @${user.username}`);
+              handleCommand(`open profile @${user.username}`);
+            });
+            
+            accountsSection.appendChild(userResult);
+          });
+          
+          resultsDiv.appendChild(accountsSection);
+        }
+        
+        // Posts section
+        const matchingPosts = state.posts.filter(post => 
+          post.text.toLowerCase().includes(searchTerm.toLowerCase()) || 
+          post.user.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        if (matchingPosts.length > 0) {
+          hasResults = true;
+          const postsSection = document.createElement('div');
+          postsSection.className = 'search-section';
+          postsSection.innerHTML = `<div class="search-section-title">Posts</div>`;
+          
+          matchingPosts.forEach(post => {
+            const postResult = document.createElement('div');
+            postResult.className = 'post-result';
+            
+            const timestamp = new Date(post.createdAt.toDate()).toLocaleString();
+            postResult.innerHTML = `
+              <div class="post-header">
+                <div class="post-username">@${post.user}</div>
+                <div class="post-timestamp">${timestamp}</div>
+              </div>
+              <div class="post-content">${post.text}</div>
+              <div class="post-stats">Likes: ${post.likes || 0}</div>
+            `;
+            
+            postResult.addEventListener('click', () => {
+              log(`Viewing post by @${post.user}: ${post.text}`);
+            });
+            
+            postsSection.appendChild(postResult);
+          });
+          
+          resultsDiv.appendChild(postsSection);
+        }
+        
+        // Hashtags section
+        const matchingTags = sampleData.hashtags.filter(tag => 
+          tag.includes(searchTerm.toLowerCase())
+        );
+        
+        if (matchingTags.length > 0) {
+          hasResults = true;
+          const tagsSection = document.createElement('div');
+          tagsSection.className = 'search-section';
+          tagsSection.innerHTML = `<div class="search-section-title">Hashtags</div>`;
+          
+          matchingTags.forEach(tag => {
+            const tagResult = document.createElement('div');
+            tagResult.className = 'search-result-item';
+            tagResult.innerHTML = `<b>Hashtag:</b> #${tag}`;
+            
+            tagResult.addEventListener('click', () => {
+              log(`Searching for posts with hashtag #${tag}`);
+              performSearch(`#${tag}`);
+            });
+            
+            tagsSection.appendChild(tagResult);
+          });
+          
+          resultsDiv.appendChild(tagsSection);
+        }
+      }
+      
+      if (!hasResults) {
+        resultsDiv.innerHTML += '<div class="system">No results found.</div>';
+      }
+      
+      termContent.appendChild(resultsDiv);
+      
+      // Update current context
+      state.previousContext = state.currentContext;
+      state.currentContext = 'search';
+      
+      // Scroll to show search results
+      setTimeout(() => {
+        term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      }, 100);
+    }
+
+    // Typing effect function
+    function showTypingEffect(text, speed = 30) {
+      const div = document.createElement('div');
+      div.className = 'log system';
+      termContent.appendChild(div);
+      
+      let i = 0;
+      const typingInterval = setInterval(() => {
+        if (i < text.length) {
+          // Add a character
+          div.textContent += text.charAt(i);
+          i++;
+          
+          // Scroll to bottom
+          term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, speed);
+    }
+
+    // Add typing indicator for system messages
+    function logWithTyping(msg, cls = "system") {
+      // Show typing indicator first
+      const typingDiv = document.createElement('div');
+      typingDiv.className = `log ${cls}`;
+      typingDiv.innerHTML = `
+        <div class="typing-container">
+          <span class="typing-indicator"></span>
+          <span class="typing-indicator"></span>
+          <span class="typing-indicator"></span>
+          <span style="margin-left: 8px;">Processing...</span>
+        </div>
+      `;
+      termContent.appendChild(typingDiv);
+      term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      
+      // After a short delay, replace with actual message
+      setTimeout(() => {
+        typingDiv.innerHTML = msg;
+        
+        // Process hashtags, mentions, and links
+        typingDiv.innerHTML = typingDiv.innerHTML.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+        typingDiv.innerHTML = typingDiv.innerHTML.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+        typingDiv.innerHTML = typingDiv.innerHTML.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="clickable-link">$1</a>');
+        
+        term.scrollTo({ top: term.scrollHeight, behavior: "smooth" });
+      }, 800);
+    }
+
+    // Override log function for certain messages to show typing effect
+    const originalLog = log;
+    log = function(msg, cls = "system") {
+      // Only show typing effect for system messages that are not errors or success
+      if (cls === "system" && !msg.includes('error') && !msg.includes('success') && Math.random() > 0.7) {
+        logWithTyping(msg, cls);
+      } else {
+        originalLog(msg, cls);
+      }
+    };
+
+    // Initialize the app
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        state.userId = user.uid;
+        state.user = `user_${user.uid.substring(0, 8)}`;
+        state.userProfile.username = state.user;
+        
+        log(`<span class="status-success">success</span>: Authenticated as ${state.user}`);
+        log('Welcome to X3VA microblogging terminal. Type <b>help</b> to begin.');
+        
+        // Load user data from Firestore
+        loadUserData();
+        
+        // Setup real-time listeners
+        setupRealtimeListeners();
+        
+        // Show posts on first login
+        if (state.isFirstTime) {
+          setTimeout(() => {
+            showPosts();
+            state.isFirstTime = false;
+          }, 1500);
+        }
+      } else {
+        // User is signed out
+        initializeAuth();
+      }
+    });
+  </script>
+
+</body>
+</html>
